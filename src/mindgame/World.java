@@ -2,10 +2,11 @@ package mindgame;
 
 import toxi.geom.Ray2D;
 import toxi.geom.Rect;
+import toxi.geom.Vec2D;
 import toxi.physics2d.VerletPhysics2D;
 
 public class World {
-	public static int BALLCOUNT = 1;
+	public static int BALLCOUNT = 2;
 	Mindgame parent;
 	int width, height;
 	float rwidth = 200, rheight, rscale, maxdist;
@@ -15,6 +16,7 @@ public class World {
 	OSCaction osc;
 	Player player[] = new Player[2];
 	Zone zone[] = new Zone[5];
+	Zone zoneB[] = new Zone[20];
 	Ball[] balls = new Ball[BALLCOUNT];
 
 	World(Mindgame _parent) {
@@ -30,7 +32,7 @@ public class World {
 		maxdist = (float) Math.sqrt(width * width + height * height);
 		bounds = new Rect(0, 0, width, height);
 		physics = new VerletPhysics2D();
-		physics.setDrag(.008f);
+		physics.setDrag(.003f);
 		physics.setTimeStep(.5f);
 		osc = new OSCaction(parent);
 		for (int i = 0; i < BALLCOUNT; i++) {
@@ -44,7 +46,11 @@ public class World {
 		float space = zoneswidth / zone.length;
 		for (int i = 0; i < zone.length; i++)
 			zone[i] = new Zone(this, Player.PLAYERWIDTH + i * space + space
-					/ 2.f - 25.f, 0, 50, parent.height, i + 2);
+					/ 2.f - 35.f, 0, 70, parent.height / 2, i + 2);
+		space = zoneswidth / zoneB.length;
+		for (int i = 0; i < zoneB.length; i++)
+			zoneB[i] = new Zone(this, Player.PLAYERWIDTH + i * space + space
+					/ 2.f - 10.f, parent.height / 2, 20, parent.height / 2, 7);
 	}
 
 	public void update() {
@@ -65,29 +71,35 @@ public class World {
 		for (int i = 0; i < player.length; i++)
 			handleCollisions(player[i]);
 		for (int i = 0; i < zone.length; i++)
-			handleZones(zone[i]);
+			handleZone(zone[i]);
+		for (int i = 0; i < zoneB.length; i++)
+			handleZone(zoneB[i]);
 	}
 
-	private void handleZones(Zone z) {
+	private void handleZone(Zone z) {
 		for (Ball b : balls) {
-			Object intersection = z.intersectsRay(
-					new Ray2D(b, b.getVelocity()), 0, b.getVelocity().x);
-			if (intersection != null) {
-				switch (b.state) {
-				case 0:
-					b.setState(1);
-					b.sound(z.type);
-					z.enter(b.id);
-					break;
-				case 1:
-					if (!b.add(b.getVelocity()).isInRectangle(z)) {
-						b.setState(0);
-						z.exit(b.id);
-					}
-					break;
-				default:
+			handleZone(z, b);
+		}
+	}
+
+	private void handleZone(Zone z, Ball b) {
+		Object intersection = z.intersectsRay(new Ray2D(b, b.getVelocity()), 0,
+				b.getVelocity().x);
+		if (intersection != null) {
+			switch (b.state) {
+			case 0:
+				b.setState(1);
+				b.sound(z.type);
+				z.enter(b.id);
+				break;
+			case 1:
+				if (!b.add(b.getVelocity()).isInRectangle(z)) {
 					b.setState(0);
+					z.exit(b.id);
 				}
+				break;
+			default:
+				b.setState(0);
 			}
 		}
 	}
@@ -130,6 +142,14 @@ public class World {
 				parent.fill(50);
 			parent.rect(z.x, z.y, z.width, z.height);
 		}
+		for (Zone z : zoneB) {
+			int ballnum = z.getBallcount();
+			if (ballnum > 0)
+				parent.fill(ballnum * 85);
+			else
+				parent.fill(50);
+			parent.rect(z.x, z.y, z.width, z.height);
+		}
 		for (Player p : player) {
 			int ballnum = p.getBallcount();
 			if (ballnum > 0)
@@ -148,8 +168,10 @@ public class World {
 	public void addBalls() {
 		for (int i = 0; i < BALLCOUNT; i++) {
 			physics.removeParticle(balls[i]);
-			balls[i] = new Ball(parent, parent.width / 2, (i + 1)
-					* (parent.height / (BALLCOUNT + 1.f)), i);
+			balls[i] = new Ball(parent,
+					(float) (parent.width / 2 + (Math.random() - .5) * 200.f),
+					(i + 1) * (parent.height / (BALLCOUNT + 1.f)), i,
+					(Vec2D) Vec2D.ZERO);
 			physics.addParticle(balls[i]);
 		}
 	}

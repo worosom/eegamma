@@ -1,5 +1,6 @@
 package mindgame;
 
+import toxi.geom.Vec2D;
 import toxi.physics2d.VerletParticle2D;
 
 public class Ball extends VerletParticle2D {
@@ -18,10 +19,14 @@ public class Ball extends VerletParticle2D {
 	}
 
 	Ball(Mindgame _parent, float _x, float _y, int _id) {
+		this(_parent, _x, _y, _id, randomVector().scale(8.f, 0.f));
+	}
+
+	Ball(Mindgame _parent, float _x, float _y, int _id, Vec2D _v) {
 		super(_x, _y, 2);
 		parent = _parent;
 		id = _id;
-		this.addVelocity(randomVector().scale(8.f, 0.f));
+		this.addVelocity(_v);
 	}
 
 	public float getNormPos() {

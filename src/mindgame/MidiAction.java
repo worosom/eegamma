@@ -66,6 +66,8 @@ public class MidiAction {
 			return new MidiThread(new Note(channels[2], 81, velocity));
 		case 6:
 			return new MidiThread(new Note(channels[2], 83, velocity));
+		case 7:
+			return new MidiThread(new Note(channels[2], 83, velocity));
 		default:
 			println("Invalid hint identifier: " + what);
 			return null;
