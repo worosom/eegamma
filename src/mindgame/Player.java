@@ -4,7 +4,7 @@ import toxi.geom.Vec2D;
 import toxi.physics2d.behaviors.AttractionBehavior;
 
 public class Player extends Zone {
-	public static float PLAYERWIDTH = 200;
+	public static float PLAYERWIDTH = 100;
 	int id;
 	float force;
 

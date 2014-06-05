@@ -5,12 +5,17 @@ import processing.core.PApplet;
 
 @SuppressWarnings("serial")
 public class Mindgame extends PApplet {
+	public static int P1PULLING = 49;
+	public static int P2PULLING = 48;
 
 	public static void main(String[] args) {
 		PApplet.main("mindgame.Mindgame");
 	}
 
 	World w;
+
+	MidiControl mc;
+
 	public static float player0Pos = 0;
 	public static float player1Pos = 1200;
 
@@ -21,12 +26,12 @@ public class Mindgame extends PApplet {
 		frameRate(25);
 		background(0);
 		w = new World(this);
+		mc = new MidiControl(this);
 	}
 
 	public void draw() {
 		background(0);
 		w.update();
-		w.physics.update();
 		w.osc.send();
 		w.draw();
 		this.frame.setTitle((int) frameRate + " fps");
@@ -49,25 +54,25 @@ public class Mindgame extends PApplet {
 
 	public void keyPressed() {
 		keys[keyCode] = true;
-		if (checkKey(49)) {
+		if (checkKey(P1PULLING)) {
 			w.player[0].force = .5f;
 		}
-		if (checkKey(48)) {
+		if (checkKey(P2PULLING)) {
 			w.player[1].force = .5f;
 		}
 	}
 
 	public void keyReleased() {
 		keys[keyCode] = false;
-		if (!checkKey(49)) {
+		if (!checkKey(P1PULLING)) {
 			w.player[0].force = 0;
 		}
-		if (!checkKey(48)) {
+		if (!checkKey(P2PULLING)) {
 			w.player[1].force = 0;
 		}
 	}
 
-	public void ease() {
-
+	public void initTraining(int player, int stat) {
+		w.setStatus(player, stat);
 	}
 }

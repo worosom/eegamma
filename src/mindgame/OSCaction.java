@@ -109,4 +109,32 @@ public class OSCaction {
 			oscp5.send(p2delayR[i], address[i]);
 		}
 	}
+
+	public void switchOffPlayer(int which) {
+		OscMessage mes = new OscMessage("/SwitchPlayer" + which);
+		mes.add(0.f);
+		NetAddress add = new NetAddress("localhost", 8000);
+		oscp5.send(mes, add);
+	}
+
+	public void switchOnPlayer(int which) {
+		OscMessage mes = new OscMessage("/SwitchPlayer" + which);
+		mes.add(1.f);
+		NetAddress add = new NetAddress("localhost", 8000);
+		oscp5.send(mes, add);
+	}
+
+	public void switchSecondBallOff() {
+		OscMessage mes = new OscMessage("/SwitchSecondBall");
+		mes.add(0.f);
+		NetAddress add = new NetAddress("localhost", 8000);
+		oscp5.send(mes, add);
+	}
+
+	public void switchSecondBallOn() {
+		OscMessage mes = new OscMessage("/SwitchSecondBall");
+		mes.add(1.f);
+		NetAddress add = new NetAddress("localhost", 8000);
+		oscp5.send(mes, add);
+	}
 }

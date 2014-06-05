@@ -6,7 +6,15 @@ import toxi.geom.Vec2D;
 import toxi.physics2d.VerletPhysics2D;
 
 public class World {
+	public static int TRAINING_NEUTRAL = 0;
+	public static int TRAINING_PULL = 1;
+	public static int PLAYING = 2;
+	public static int WIN = 3;
+
 	public static int BALLCOUNT = 2;
+
+	private int[] status = new int[2];
+
 	Mindgame parent;
 	int width, height;
 	float rwidth = 200, rheight, rscale, maxdist;
@@ -51,11 +59,17 @@ public class World {
 		for (int i = 0; i < zoneB.length; i++)
 			zoneB[i] = new Zone(this, Player.PLAYERWIDTH + i * space + space
 					/ 2.f - 10.f, parent.height / 2, 20, parent.height / 2, 7);
+		player[0].update();
+		player[1].update();
 	}
 
 	public void update() {
-		player[0].update();
-		player[1].update();
+		physics.update();
+		// Only let the players influence if they aren't training
+		if (status[0] + status[1] == 4) {
+			player[0].update();
+			player[1].update();
+		}
 
 		for (Ball b : balls) {
 			player[0].setDistball(b.distanceTo(player[0].p), b.id);
@@ -173,6 +187,56 @@ public class World {
 					(i + 1) * (parent.height / (BALLCOUNT + 1.f)), i,
 					(Vec2D) Vec2D.ZERO);
 			physics.addParticle(balls[i]);
+		}
+	}
+
+	public void addTrainingBalls(int player) {
+		for (int i = 0; i < BALLCOUNT; i++) {
+			physics.removeParticle(balls[i]);
+			Vec2D v;
+			if (player == 0)
+				v = new Vec2D(-2, 0);
+			else
+				v = new Vec2D(2, 0);
+			balls[i] = new Ball(parent, parent.width / 2, parent.height / 2, i,
+					v);
+			if (i == 0)
+				physics.addParticle(balls[i]);
+		}
+	}
+
+	public void setStatus(int player, int stat) {
+		switch (stat) {
+		case 0:
+			System.out.println("Initiate >neutral< training for Player "
+					+ player);
+			status[player] = TRAINING_NEUTRAL;
+			// initiate neutral training
+			// switch off the audio
+			parent.w.osc.switchOffPlayer(player);
+			break;
+		case 1:
+			System.out.println("Initiate >pull< training for Player " + player);
+			status[player] = TRAINING_PULL;
+			// initiate pull training
+			// spawn one ball moving slowly towards the player
+			parent.w.osc.switchOnPlayer(player);
+			parent.w.osc.switchOnPlayer((player + 1) % 2);
+			parent.w.osc.switchSecondBallOff();
+			addBalls();
+			addTrainingBalls(player);
+			break;
+		case 2:
+			System.out.println("Initiate >play< mode for Player " + player);
+			status[player] = PLAYING;
+			// let the player play
+			parent.w.osc.switchOnPlayer(player);
+			parent.w.osc.switchSecondBallOn();
+			addBalls();
+			break;
+		case 3:
+
+			break;
 		}
 	}
 }
