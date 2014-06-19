@@ -1,6 +1,7 @@
 package mindgame;
 
 import oscP5.OscMessage;
+import oscP5.OscP5;
 import processing.core.PApplet;
 
 @SuppressWarnings("serial")
@@ -15,6 +16,7 @@ public class Mindgame extends PApplet {
 	World w;
 
 	MidiControl mc;
+	OscP5 mindcontrol;
 
 	public static float player0Pos = 0;
 	public static float player1Pos = 1200;
@@ -25,8 +27,9 @@ public class Mindgame extends PApplet {
 		size((int) player1Pos, 320);
 		frameRate(25);
 		background(0);
-		w = new World(this);
 		mc = new MidiControl(this);
+		w = new World(this);
+		mindcontrol = new OscP5(this, 7400);
 	}
 
 	public void draw() {
@@ -42,7 +45,13 @@ public class Mindgame extends PApplet {
 	}
 
 	void oscEvent(OscMessage message) {
-		// println(message.toString());
+		// check if theOscMessage has an address pattern we are looking for
+		if (message.checkAddrPattern("/COG/NEUTRAL") == true) {
+			w.player[0].force = 0;
+		} else if (message.checkAddrPattern("/COG/PULL") == true) {
+			w.player[0].force = message.get(0).floatValue();
+			println(w.player[0].force = message.get(0).floatValue());
+		}
 	}
 
 	boolean checkKey(int k) {

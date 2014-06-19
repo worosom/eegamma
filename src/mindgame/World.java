@@ -115,6 +115,9 @@ public class World {
 			default:
 				b.setState(0);
 			}
+		} else if (!b.add(b.getVelocity()).isInRectangle(z) && z.hasBall[b.id]) {
+			b.setState(0);
+			z.exit(b.id);
 		}
 	}
 
@@ -142,6 +145,10 @@ public class World {
 					}
 					break;
 				}
+			} else if (!b.add(b.getVelocity()).isInRectangle(z)
+					&& z.hasBall[b.id]) {
+				b.setState(0);
+				z.exit(b.id);
 			}
 		}
 	}
