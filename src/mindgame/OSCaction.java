@@ -4,10 +4,16 @@ import netP5.NetAddress;
 import oscP5.OscMessage;
 import oscP5.OscP5;
 import oscP5.OscProperties;
+import processing.core.PApplet;
 
 public class OSCaction {
+	public static int TRAINING_NEUTRAL = 0;
+	public static int TRAINING_PULL = 1;
+	public static int PLAY = 2;
+	public static int PAUSE = 3;
+	public static int WIN = 4;
 	Mindgame parent;
-	OscP5 oscp5;
+	public OscP5 oscp5;
 
 	Ball ball;
 	Player[] player;
@@ -27,13 +33,19 @@ public class OSCaction {
 			p2delayL = new OscMessage[World.BALLCOUNT],
 			p2delayR = new OscMessage[World.BALLCOUNT];
 
-	OSCaction(Mindgame _parent) {
+	/**
+	 * 
+	 * @param _parent
+	 * @param clientname
+	 *            Such as "localhost"
+	 */
+
+	OSCaction(Mindgame _parent, String clientname) {
 		parent = _parent;
 		OscProperties properties = new OscProperties();
 		for (int i = 0; i < address.length; i++)
-			address[i] = new NetAddress("localhost", 2345 + i);
-		properties.setListeningPort(9001);
-		properties.setSRSP(true);
+			address[i] = new NetAddress(clientname, 2345 + i);
+		properties.setListeningPort(9000);
 		properties.setDatagramSize(64);
 		oscp5 = new OscP5(parent, properties);
 
@@ -75,10 +87,10 @@ public class OSCaction {
 					.getNormDistBall(i)) / Math.E) + .001f);
 			p2SpkDist[i].add((float) (-Math.log(1.f - player[1]
 					.getNormDistBall(i)) / Math.E) + .001f);
-
-			p1ballpan[i].add((float) (ball.y / parent.height * .3f) + .35f);
-			p2ballpan[i]
-					.add((1.f - (float) (ball.y / parent.height) * .3f) + .35f);
+			p1ballpan[i].add(PApplet.map(ball.y, -parent.height / 2,
+					parent.height / 2, .3f, .7f));
+			p2ballpan[i].add(PApplet.map(ball.y, parent.height / 2,
+					-parent.height / 2, .3f, .7f));
 			p1Fine[i].add(player[0].dopplers[i]);
 			p2Fine[i].add(player[1].dopplers[i]);
 			p1delayL[i].add(player[0].distballsL[i] / parent.w.maxdist / 300.f
@@ -110,31 +122,34 @@ public class OSCaction {
 		}
 	}
 
-	public void switchOffPlayer(int which) {
+	/**
+	 * Switches the specified player audio on or off
+	 * 
+	 * @param which
+	 *            Ball ID
+	 * @param state
+	 *            0 or 1 for on or off
+	 */
+
+	public void switchPlayer(int which, float state) {
 		OscMessage mes = new OscMessage("/SwitchPlayer" + which);
-		mes.add(0.f);
-		NetAddress add = new NetAddress("localhost", 8000);
+		mes.add(state);
+		NetAddress add = new NetAddress(World.ABLETONMACHINE, 8000);
 		oscp5.send(mes, add);
 	}
 
-	public void switchOnPlayer(int which) {
-		OscMessage mes = new OscMessage("/SwitchPlayer" + which);
-		mes.add(1.f);
-		NetAddress add = new NetAddress("localhost", 8000);
-		oscp5.send(mes, add);
-	}
-
-	public void switchSecondBallOff() {
-		OscMessage mes = new OscMessage("/SwitchSecondBall");
-		mes.add(0.f);
-		NetAddress add = new NetAddress("localhost", 8000);
-		oscp5.send(mes, add);
-	}
-
-	public void switchSecondBallOn() {
-		OscMessage mes = new OscMessage("/SwitchSecondBall");
-		mes.add(1.f);
-		NetAddress add = new NetAddress("localhost", 8000);
+	/**
+	 * Switches the specified balls audio on or off
+	 * 
+	 * @param which
+	 *            Ball ID
+	 * @param state
+	 *            0 or 1 for on or off
+	 */
+	public void switchBall(int which, float state) {
+		OscMessage mes = new OscMessage("/SwitchBall" + which);
+		mes.add(state);
+		NetAddress add = new NetAddress(World.ABLETONMACHINE, 8000);
 		oscp5.send(mes, add);
 	}
 }

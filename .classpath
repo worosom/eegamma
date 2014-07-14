@@ -8,6 +8,6 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/Toxiclibscore"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/Verletphysics"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/controlP5"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/adastra_vrpn"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/java_vrpn"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

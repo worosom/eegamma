@@ -7,7 +7,9 @@ import vrpn.AnalogRemote;
 
 public class Player extends Zone {
 	public static float PLAYERWIDTH = 100;
-	int id;
+	public boolean runVrpn = true;
+	float forceThreshold = .003f;
+	float forceMult = 35.f;
 	float force;
 
 	float[] distsballs = new float[World.BALLCOUNT];
@@ -21,18 +23,37 @@ public class Player extends Zone {
 	AttractionBehavior playerBehavior;
 
 	VrpnListener vrpn;
+	VrpnListener listener;
 
-	Player(World _parent, int _id, float _pos) {
-		super(_parent, _pos, 0, PLAYERWIDTH, _parent.parent.height, _id);
+	/**
+	 * Player instance, extends Zone.
+	 * 
+	 * @param _id
+	 *            Player ID, must be unique, 0 or 1
+	 * @param _pos
+	 *            Player Position, absolute
+	 * @param address
+	 *            Should this instance be connected to OpenViBE, add the address
+	 *            here, such as "localhost", "openvibe-vrpn"
+	 */
+
+	Player(World _parent, int _id, float _pos, String... address) {
+		super(_parent, _pos, -_parent.height / 2, PLAYERWIDTH, _parent.height,
+				_id);
 		parent = _parent;
-		id = _id;
+		type = _id;
 		setup();
-		// vrpn = new VrpnListener("openvibe-vrpn", "vm");
+		if (address.length > 1)
+			vrpn = new VrpnListener(address[1], address[0]);
+		else
+			runVrpn = false;
+		System.out.println("Player " + type + ": Running vrpn = " + runVrpn);
 	}
 
 	private void setup() {
-		p = new Vec2D(x + id * PLAYERWIDTH, y + height / 2.f);
-		playerBehavior = new AttractionBehavior(p, parent.width / 2, .5f);
+		p = new Vec2D(x + type * PLAYERWIDTH, 0);
+		playerBehavior = new AttractionBehavior(p, parent.width / 2.f
+				+ parent.width / 8.f, 0);
 		parent.physics.addBehavior(playerBehavior);
 
 		for (int i = 0; i < World.BALLCOUNT; i++) {
@@ -40,18 +61,53 @@ public class Player extends Zone {
 			dopplers[i] = .5f;
 		}
 
-		if (id == 0) {
-			ear[0] = new Vec2D(p.add(-(7.f / parent.rscale), 0));
-			ear[1] = new Vec2D(p.add(+(7.f / parent.rscale), 0));
+		if (type == 0) {
+			ear[0] = new Vec2D(p.copy().add(0, -(7.f / parent.rscale)));
+			ear[1] = new Vec2D(p.copy().add(0, +(7.f / parent.rscale)));
 		} else {
-			ear[1] = new Vec2D(p.add(-(7.f / parent.rscale), 0));
-			ear[0] = new Vec2D(p.add(+(7.f / parent.rscale), 0));
+			ear[1] = new Vec2D(p.copy().add(0, -(7.f / parent.rscale)));
+			ear[0] = new Vec2D(p.copy().add(0, +(7.f / parent.rscale)));
 		}
 	}
 
 	public void update() {
-		// force = (float) vrpn.getChannel(id);
+		if (runVrpn && parent.status[0] == World.PLAY) {
+			float f = vrpn.getChannel(0);
+			// System.out.println(f);
+			if (f > forceThreshold) {
+				setForce(f * forceMult);
+				System.out.println(force);
+			} else if (!parent.parent.checkKey(Mindgame.P1PULLING)
+					&& !parent.parent.checkKey(Mindgame.P1PULLING))
+				setForce(0);
+		}
+	}
+
+	public void setForce(float f) {
+		force = f;
 		playerBehavior.setStrength(force);
+	}
+
+	public void setForceThreshold(float thresh) {
+		forceThreshold = thresh;
+		String mes = "Player " + type + ": Force Threshold set to: "
+				+ forceThreshold;
+		System.out.println(mes);
+	}
+
+	public void setForceMult(float mult) {
+		forceMult = mult;
+		String mes = "Player " + type + ": Force Multilplier set to: "
+				+ forceMult;
+		System.out.println(mes);
+	}
+
+	public void setBehavior(int lev) {
+		if (lev == 2) {
+			parent.physics.removeBehavior(playerBehavior);
+			playerBehavior = new AttractionBehavior(p, parent.width / 2 + 30, 0);
+			parent.physics.addBehavior(playerBehavior);
+		}
 	}
 
 	public void setDoppler(float v, int which) {

@@ -12,10 +12,10 @@ public class MidiAction {
 
 	int[] channels;
 
-	MidiAction(Mindgame _parent, int _id) {
+	MidiAction(Mindgame _parent, MidiBus _midibus, int _id) {
 		parent = _parent;
 		id = _id;
-		midibus = new MidiBus(this, -1, "IAC-Bus 1");
+		midibus = _midibus;
 		setChannels();
 	}
 
@@ -45,7 +45,10 @@ public class MidiAction {
 		default:
 			println("Invalid hit identifier: " + what);
 		}
+	}
 
+	public void ballSpawn() {
+		new MidiThread(new Note(channels[0], 11, 10), 1000);
 	}
 
 	public MidiThread ballHint(int what) {
@@ -72,7 +75,6 @@ public class MidiAction {
 			println("Invalid hint identifier: " + what);
 			return null;
 		}
-
 	}
 
 	private void println(String what) {
@@ -93,6 +95,8 @@ public class MidiAction {
 				time = (long) (Math.abs(parent.w.balls[id].getVelocity().x) * 20);
 			else if (_time < 0)
 				time = 600000;
+			else
+				time = _time;
 			start();
 		}
 
