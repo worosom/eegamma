@@ -7,6 +7,5 @@ A multi-player game with no visuals, but a sound-scape, in which players can int
 
 ----
 
-See more documentation on the BTK Creative Gaming Blog
-
+See more documentation on this and other EEG-based Projects on the BTK Creative Gaming Blog
 [Mind Games - Alexander Morosow](http://creativegaming.tumblr.com/tagged/alexander-morosow)
